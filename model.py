@@ -34,6 +34,7 @@ testdf = pd.read_csv('fraudTest.csv')
 # Data Modeling Techniques
 #pulling out target features/columns
 target_columns =['amt', 'city_pop', 'zip', 'category', 'unix_time']
+#target_columns = ['first', 'last', 'dob', 'gender', 'street', 'city', 'state', 'zip', 'job', 'amt']
 
 #full_df = pd.concat([traindf, testdf])
 #Training Dataset
@@ -45,6 +46,7 @@ X_val = testdf[target_columns]
 y_val = testdf['is_fraud']
 
 
+#%%
 #restructuring data for model training
 #Training dataset
 dummy_categories = pd.get_dummies(data=traindf['category'])
@@ -59,6 +61,7 @@ X_newval = X_val.drop(['category'], axis=1)
 for category in dummy_categories:
   X_newval[category] = dummy_categories[category]
 
+print(X_newval)
 #%%
 # Dimensionality Reduction
 #Training Dataset
@@ -68,6 +71,7 @@ from sklearn.decomposition import PCA
 X_normalized = X_newraw.values
 X_normalized = StandardScaler().fit_transform(X_normalized)
 
+print(X_normalized)
 pca = PCA(n_components=6)
 principal_components = pca.fit_transform(X_normalized)
 principal_df = pd.DataFrame(data = principal_components, columns = ['principal component 1', 'principal component 2',
