@@ -72,11 +72,10 @@ X_normalized = X_newraw.values
 X_normalized = StandardScaler().fit_transform(X_normalized)
 
 print(X_normalized)
-pca = PCA(n_components=6)
-principal_components = pca.fit_transform(X_normalized)
-principal_df = pd.DataFrame(data = principal_components, columns = ['principal component 1', 'principal component 2',
-                                                                    'principal component 3', 'principal component 4',
-                                                                    'principal component 5', 'principal component 6'])
+pca = PCA(n_components=1)
+principal_components_train = pca.fit_transform(X_normalized)
+principal_df = pd.DataFrame(data = principal_components_train, 
+                            columns = [ 'principal component 1'])
 
 from sklearn.model_selection import train_test_split
 
@@ -90,18 +89,17 @@ from sklearn.decomposition import PCA
 X_normalized = X_newval.values
 X_normalized = StandardScaler().fit_transform(X_normalized)
 
-pca = PCA(n_components=6)
-principal_components = pca.fit_transform(X_normalized)
-principal_df_val = pd.DataFrame(data = principal_components, columns = ['principal component 1', 'principal component 2',
-                                                                    'principal component 3', 'principal component 4',
-                                                                    'principal component 5', 'principal component 6'])
+pca = PCA(n_components=1)
+principal_components_val = pca.fit_transform(X_normalized)
+principal_df_val = pd.DataFrame(data = principal_components_val, 
+                                columns = [ 'principal component 1'])
 
 #%%
 # KNN Modeling
 from sklearn.neighbors import KNeighborsClassifier
 #X_train, X_test, y_train, y_test = train_test_split(principal_df, y_raw, test_size=0.3, random_state=42)
 
-knn_model = KNeighborsClassifier(n_neighbors=5)
+knn_model = KNeighborsClassifier(n_neighbors=9)
 knn_model.fit(X_train, y_train)
 y_pred_knn = knn_model.predict(X_test)
 
@@ -124,4 +122,7 @@ print(classification_report(y_test, y_pred_knn))
 print("-"*50)
 print("R^2: {}".format(knn_model.score(X_test, y_test)))
 
+# %%
+val = knn_model.predict(principal_df_val)
+val
 # %%

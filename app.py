@@ -1,9 +1,20 @@
+# Static Data Visualization & Overview - General Info. about Credit Card Fraud (Rosemarie & Josh O.)
+# Input feature - Submit Excel/CSV file (Josh B. & Josh O.)
+    # -inputs into our model and analyzes risks of each transaction.
+    # -outputs excel file to local env.
+# Financial Overview Webpage (optional)
+    # -visualization, stats of spending habits
+
+#%%
 # Dependencies
 import pandas as pd
 import numpy as np
 from flask import Flask, request, jsonify, render_template, url_for, redirect
 import pickle
 import logging
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 # Flask App - Initialization
 app = Flask(__name__)
@@ -20,57 +31,47 @@ def preprocess_input(input_features):
     # Pre-Processing
     # Data Modeling Techniques
     
-   
     #restructuring data for model
     target_columns =['amt', 'city_pop', 'zip', 'category', 'unix_time']
     #target_columns = ['first', 'last', 'dob', 'gender', 'street', 'city', 'state', 'zip', 'job', 'amt']
 
-    # Create a dictionary to store values for each target column
-    # Create a DataFrame
+    # Create flat data 
     flat_data = [item[0] for item in input_features]
 
     # Create a DataFrame
     X_val = pd.DataFrame([flat_data], columns=target_columns)
     print('X_val')
     print(X_val)
-    # Drop the 'category' column
-    #Validation dataset
+
+    # One-hot encoding
     dummy_categories = pd.get_dummies(data=X_val['category'])
 
-    X_newval = X_val.drop(['category'], axis=1)
+    # Drop the original 'category' column and concatenate the one-hot encoded columns
+    # X_newval = X_val.drop(['category'], axis=1)
 
-    for category in dummy_categories:
-        X_newval[category] = dummy_categories[category]
-
-
-    print("X_newval")
-    print(X_newval)
-
-    #%%
-    # Dimensionality Reduction
-
-    #Validation Dataset
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.decomposition import PCA
+    # for category in dummy_categories:
+    #     X_newval[category] = dummy_categories[category]
+    X_newval = pd.concat([X_val.drop(['category'], axis=1), dummy_categories], axis=1)
     
+    X_newval = X_newval.apply(pd.to_numeric, errors='coerce')
 
-    X_normalized = X_newval.values
-    X_normalized = StandardScaler().fit_transform(X_normalized)
-    new_column = np.zeros(X_normalized.shape[0])
-    X_normalized = np.column_stack((X_normalized, new_column))
-    print("X_normalized")
+    print("\nX_newval:")
+    print(X_newval)
+    
+    # Dimensionality Reduction
+    X_normalized = StandardScaler().fit_transform(X_newval)
+
+    print("\nX_normalized:")
     print(X_normalized)
 
-    
-    # pca = PCA(n_components=6)
-    # principal_components = pca.fit_transform(X_normalized)
-    # int_features_new = pd.DataFrame(data = principal_components, columns = ['principal component 1', 'principal component 2',
-    #                                                                     'principal component 3', 'principal component 4',
-    #                                                                   'principal component 5', 'principal component 6'])
-    int_features_new = pd.DataFrame(data = X_normalized, columns = ['principal component 1', 'principal component 2',
-                                                                        'principal component 3', 'principal component 4',
-                                                                      'principal component 5', 'principal component 6'])
-    # Example: Return the processed features
+    n_samples, n_features = X_normalized.shape
+    print("\nIncoming Features to PCA from X_normalized:")
+    print(n_features)
+
+    pca = PCA(n_components=1)
+    int_features_new = pca.transform(X_normalized)
+    print('\nPCA transformation:')
+    print(int_features_new)
     return int_features_new
 
 
@@ -86,7 +87,7 @@ def predict():
     
     data = request.form.to_dict(flat=False)
 
-    # Assuming your input features are passed as JSON in the request
+    # Assuming input features
     # 'amt', 'city_pop', 'zip', 'category', 'unix_time'
     input_features = [
         data['amt'],
@@ -145,12 +146,7 @@ def predict():
 #         # Log or handle the exception as needed
 #         return jsonify({'error': str(e)})
 
-# Static Data Visualization & Overview - General Info. about Credit Card Fraud (Rosemarie & Josh O.)
-# Input feature - Submit Excel/CSV file (Josh B. & Josh O.)
-    # -inputs into our model and analyzes risks of each transaction.
-    # -outputs excel file to local env.
-# Financial Overview Webpage (optional)
-    # -visualization, stats of spending habits
+
 
 if __name__ == "__main__":
     app.run(debug=True)
