@@ -8,6 +8,11 @@
 <body>
     <h1>Credit Card Fraud Detection</h1>
     <hr>
+    <a href="{{ url_for('mass_predict') }}" class="btn btn-secondary">Mass Upload</a>
+    <a href="{{ url_for('visual') }}" class="btn btn-secondary">Visuals</a>
+    <p></p>
+    <h2>Single Query</h2>
+    <p></p>
     <div class="content">
         <form id="predictionForm" action="/predict" method="post">
             <!-- 'amt', 'city_pop', 'zip', 'category', 'unix_time' -->

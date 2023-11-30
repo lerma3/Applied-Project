@@ -6,20 +6,33 @@
     # -visualization, stats of spending habits
 
 #%%
-# Dependencies
+# Dependencies - General
 import pandas as pd
 import numpy as np
-from flask import Flask, request, jsonify, render_template, url_for, redirect
+from flask import Flask, request, flash, jsonify, render_template, url_for, redirect
 import pickle
 import logging
 
+# Dependency - Model
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+
+# Dependency - Excel File upload
+import os
+from werkzeug.utils import secure_filename
 
 # Flask App - Initialization
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)  # Set the log level as needed
 
+    
+# Set the upload folder
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Function to validate file extension
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'xlsx', 'xls', 'csv'}
 
 # Load knn-model
 with open('knn_model.pkl', 'rb') as model_file:
@@ -75,12 +88,14 @@ def preprocess_input(input_features):
     return int_features_new
 
 
+#____________________________________________________________---
+
 # Flask App Pathways
 @app.route('/', methods=('GET', 'POST'))
 def index():
     return render_template('index.html')
 
-
+# Single Prediction Route
 @app.route('/predict',methods=['POST'])
 def predict():
     print("Received POST request")
@@ -99,18 +114,6 @@ def predict():
 
     print(f'Input Features: {input_features}')
 
-    # print("Received POST request")
-    # # Ensure front-end input is the same as 'X_test' format and dimensionality from model.py
-    # int_features = [int(request.form['name']), 
-    #                 int(request.form['address']), 
-    #                 int(request.form['dob']), 
-    #                 int(request.form['gender']),
-    #                 float(request.form['amt']),
-    #                 int(request.form['zip']),
-    #                 request.form['category']]
-
-    # print(f'Input Features: {int_features}')
-
     # Pre-processing and PCA process for input values - aligns it to X_test principal component
     final_features = preprocess_input(input_features)
 
@@ -127,26 +130,59 @@ def predict():
     return jsonify({'prediction': prediction.tolist()})
     #return render_template('index.html', prediction_text='Credit Default Fraud Risk $ {}'.format(output))
 
-# @app.route('/results',methods=['POST'])
-# def results():
-#     try:
-#         data = request.get_json(force=True)
-#         input_values = list(data.values())
-#         # Preprocessing and PCA process for input values
-#         final_features = preprocess_input(input_values)
+# Excel Upload - Mass Predict Feature
+@app.route('/mass_predict',methods=['GET', 'POST'])
+def mass_predict():
+    if request.method == 'POST':
+        print("Received Excel POST request")
 
-#         prediction = knn_model.predict([final_features])
-#         output = prediction[0]
+        if 'file' not in request.files:
+            return redirect(url_for('mass_predict'))
 
-#         app.logger.info(f'Prediction Result: {output}')
+        file = request.files['file']
 
-#         return jsonify({'prediction': output})
-#     except Exception as e:
-#         app.logger.error(f'Error: {e}')
-#         # Log or handle the exception as needed
-#         return jsonify({'error': str(e)})
+        # Check if a file was selected
+        if file.filename == '':
+            return redirect(url_for('mass_predict'))
+
+        # Check if the file has an allowed extension
+        if not allowed_file(file.filename):
+            return redirect(url_for('mass_predict'))
+        
+        try:
+            # Save the file
+            file.save(file.filename)
+
+            # Read the Excel or CSV file into a Pandas DataFrame
+            input_data = pd.read_excel(file)  # Update this based on your actual data format
+
+            # Process the input_data 
+            print(input_data)
+
+            # Return the processed data or redirect to another page
+            return render_template('mass_upload.html', data=input_data.to_html())
+        except Exception as e:
+            print(f'Error processing file: {str(e)}', 'error')
+        # finally:
+        #     # Clean up: remove the uploaded file
+        #     os.remove(file.filename)
+
+    # Render the initial form
+    return render_template('mass_upload.html')
+    
+#Data Visualization Page
+@app.route('/visual',methods=['GET', 'POST'])
+def visual():
+    # Sample data for the chart
+    labels = ['January', 'February', 'March', 'April', 'May']
+    data = [10, 20, 15, 25, 30]
+
+    # Pass data to the template
+    return render_template('visual.html', labels=labels, data=data)
+
 
 
 
 if __name__ == "__main__":
     app.run(debug=True)
+# %%

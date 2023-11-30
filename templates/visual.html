@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Chart Example</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Credit Card Fraud Detection</h1>
+
+    <a href="{{ url_for('mass_predict') }}" class="btn btn-secondary">Mass Upload</a>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Home</a>
+    <p></p>
+    <h2>Data Visualization</h2>
+    <p></p>
+    <canvas id="myChart" width="400" height="200"></canvas>
+
+    <script>
+        // Sample data for the chart
+        // Access Python variables in JavaScript using Jinja2
+        var labels = {{ labels|tojson|safe }};
+        var data = {{ data|tojson|safe }};
+
+
+        // Get the chart context from the canvas element
+        var ctx = document.getElementById('myChart').getContext('2d');
+
+        // Create a new chart with the specified configuration
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Monthly Data',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

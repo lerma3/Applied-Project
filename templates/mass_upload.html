@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Credit Card Fraud App - Excel Upload</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <h1>Credit Card Fraud Detection</h1>
+
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Home</a>
+    <a href="{{ url_for('visual') }}" class="btn btn-secondary">Visuals</a>
+    <p></p>
+    <h2>Excel Upload</h2>
+    <p></p>
+    <form action="{{url_for('mass_predict')}}" method="post" enctype="multipart/form-data">
+        <label for="file">Upload Excel File:</label>
+        <input type="file" name="file" id="file" accept=".xlsx, .xls, .csv" required>
+        <br>
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>
