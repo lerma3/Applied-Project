@@ -106,6 +106,51 @@ y_pred_knn = knn_model.predict(X_test)
 pickle.dump(knn_model, open('knn_model.pkl','wb'))
 
 #%%
+# Dimensionality Reduction
+#Training Dataset
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+X_normalized = X_newraw.values
+X_normalized = StandardScaler().fit_transform(X_normalized)
+
+print(X_normalized)
+pca = PCA(n_components=4)
+principal_components_train = pca.fit_transform(X_normalized)
+principal_df = pd.DataFrame(data = principal_components_train, 
+                            columns = [ 'principal component 1', 'principal component 2',
+                                        'principal component 3', 'principal component 4'])
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(principal_df, y_raw, test_size=0.3, random_state=42)
+
+
+#Validation Dataset
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+X_normalized = X_newval.values
+X_normalized = StandardScaler().fit_transform(X_normalized)
+
+pca = PCA(n_components=4)
+principal_components_val = pca.fit_transform(X_normalized)
+principal_df_val = pd.DataFrame(data = principal_components_val, 
+                                columns = [ 'principal component 1', 'principal component 2',
+                                            'principal component 3', 'principal component 4'])
+
+#%%
+# KNN Modeling
+from sklearn.neighbors import KNeighborsClassifier
+#X_train, X_test, y_train, y_test = train_test_split(principal_df, y_raw, test_size=0.3, random_state=42)
+
+knn_model_2 = KNeighborsClassifier(n_neighbors=9)
+knn_model_2.fit(X_train, y_train)
+y_pred_knn = knn_model_2.predict(X_test)
+
+pickle.dump(knn_model_2, open('knn_model_2.pkl','wb'))
+
+#%%
 #Verification of Model Creation
 model = pickle.load(open('knn_model.pkl','rb'))
 y_pred_log = knn_model.predict(X_test)

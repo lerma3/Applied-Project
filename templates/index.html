@@ -8,87 +8,76 @@
 <body>
     <h1>Credit Card Fraud Detection</h1>
     <hr>
+    <a href="{{ url_for('single_query') }}" class="btn btn-secondary">Single Query</a>
     <a href="{{ url_for('mass_predict') }}" class="btn btn-secondary">Mass Upload</a>
     <a href="{{ url_for('visual') }}" class="btn btn-secondary">Visuals</a>
     <p></p>
-    <h2>Single Query</h2>
-    <p></p>
+    <h2>Project Overview</h2>
+    <p>
+    <br>
+    </p>
     <div class="content">
-        <form id="predictionForm" action="/predict" method="post">
-            <!-- 'amt', 'city_pop', 'zip', 'category', 'unix_time' -->
-            
-            <p>
-                <label for="amt"><b>Amount</b></label>
-            </p>
-            <p>
-                <input type="text" id="amt" name="amt" placeholder="Amount" required>
-            </p>
-            <p>
-                <label for="city_pop"><b>City Population</b></label>
-            </p>
-            <p>
-                <input type="text" id="city_pop" name="city_pop" placeholder="City Population" required>
-            </p>
-            <p>
-                <label for="zip"><b>ZIP Code</b></label>
-            </p>
-            <p>
-                <input type="text" id="zip" name="zip" placeholder="ZIP Code" required>
-            </p>
-            <p>
-                <label for="category"><b>Category</b></label>
-            </p>
-            <p>
-                <input type="text" id="category" name="category" placeholder="Category" required>
-            </p>
-            <p>
-                <label for="unix_time"><b>Time</b></label>
-            </p>
-            <p>
-                <input type="text" id="unix_time" name="unix_time" placeholder="Unix Time" required>
-            </p>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-        {% if prediction_text %}
-            <h2>Prediction Result</h2>
-            <p>{{ prediction_text }}</p>
-        {% endif %}
-        {% if prediction_text %}
-            <div class="mt-4 alert alert-success">
-                <h4 class="alert-heading">Prediction Result</h4>
-                <p>{{ prediction_text }}</p>
-            </div>
-        {% endif %}
+        <p>
+            <h3>Objectives</h3> 
+            Create a fraud level detection tool based on simulated credit card transaction data.
+            <p></p>
+
+            <h3>Usefulness</h3>
+            This application identifies potential fraud or fraud-related credit card charges. 
+            There are similar applications/models available, however, those models are typically 
+            internal or proprietary to a particular bank or credit card company. 
+            This application will target consumers and business owners as main stakeholders. 
+            Users will be able to audit their credit card transactions for fraudulent activity, 
+            review features that lead to potentially fraudulent transactions, 
+            and explore other unique insights based on their transaction and spending history.
+            <p></p>
+		
+            <h3>Dataset</h3>
+            Credit Card Fraud: <a href="https://www.kaggle.com/datasets/kartik2112/fraud-detection">https://www.kaggle.com/datasets/kartik2112/fraud-detection</a><br>
+
+            The dataset is simulated credit card transactions between Jan. 1st, 2019 and Dec. 31st,
+            2020. The credit card simulated data was generated using the Sparkov Data Generation 
+            tool by Brandon Harris and the owner of the dataset is Kartik Shenoy. It was generated 
+            in 2020 and the purpose was to have more realistic simulated transactions. 
+            The training data is 1,296,675 records and the test data is 555,719 - with both csv 
+            files having the same 23 features. The dataset does not contain any NA values and does 
+            not require intensive cleaning. But our team still intends to perform the necessary 
+            actions to verify and will still need to clean the dataset.
+            <p></p>
+
+            <h3>Functionality</h3>
+            The data science functions of interest involve performing statistical analysis on the 
+            dataset and doing classification modeling. We intend to have a classification model 
+            to determine fraudulent transactions and determine various levels based on thresholds 
+            of spend. Our application will have the capability to perform fraud level detection 
+            based on feature input from a user interface. For example, a user can input features 
+            such as purchase category, amount spent, or merchant name. Other features can be used 
+            to visualize the statistics of the dataset. For example, we can use features like date 
+            of transaction to analyze if fraud occurs more often or less during certain times of 
+            the year. Similarly, we can use features like merchant latitude and merchant longitude 
+            to analyze if fraud occurs in certain merchant locations.
+            <p></p>
+
+            <h3>Group 2</h3>
+            <table style="width:100%">
+                <tr>
+                  <th>Rosemarie Lerma</th>
+                  <th>Joshua Breunig</th>
+                  <th>Joshua Otten</th>
+                </tr>
+                <tr>
+                  <td>rosemarie.lerma@iu.edu</td>
+                  <td>joshua.breunig@iu.edu</td>
+                  <td>joshua.otten@iu.edu</td>
+                </tr>
+                <tr>
+                  <td><a href="https://www.linkedin.com/in/rosemarie-lerma-2358794b/">LinkedIn - Rosemarie Lerma</a></td>
+                  <td><a href="https://www.linkedin.com/in/joshua-breunig/">LinkedIn - Joshua Breunig</a></td>
+                  <td><a href="https://www.linkedin.com/in/joshua-otten-324bb646/">LinkedIn - Joshua Otten</a></td>
+                </tr>
+              </table>
+
+        </p>
     </div>
-    <script>
-        function submitForm() {
-            var form = document.getElementById("predictionForm");
-            var formData = new FormData(form);
-            var jsonData = {};
-    
-            formData.forEach(function(value, key) {
-                jsonData[key] = value;
-            });
-    
-            // Log the JSON data to the console for verification
-            console.log('JSON Data:', jsonData);
-    
-            fetch("/predict", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(jsonData),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Handle the response data as needed
-                console.log('Response:', data);
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
-        }
-    </script>
 </body>
 </html>

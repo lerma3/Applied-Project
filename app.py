@@ -1,8 +1,13 @@
-# Static Data Visualization & Overview - General Info. about Credit Card Fraud (Rosemarie & Josh O.)
-# Input feature - Submit Excel/CSV file (Josh B. & Josh O.)
+# Landing page - General Info. about Credit Card Fraud
+    # -about section: pull the purpose from project proposal
+    # -contact info.
+# Move single query to a different html template.
+    # -repurpose index.html.
+# Excel Upload Webpage - Submit Excel/CSV file (Josh B. & Josh O.)
+    # -embed template for user to download locally and use to upload (add some instruction notes on webpage.)
     # -inputs into our model and analyzes risks of each transaction.
     # -outputs excel file to local env.
-# Financial Overview Webpage (optional)
+# Visualization Webpage
     # -visualization, stats of spending habits
 
 #%%
@@ -20,6 +25,8 @@ from sklearn.decomposition import PCA
 # Dependency - Excel File upload
 import os
 from werkzeug.utils import secure_filename
+import zipcodes
+import requests
 
 # Flask App - Initialization
 app = Flask(__name__)
@@ -82,7 +89,7 @@ def preprocess_input(input_features):
     print(n_features)
 
     pca = PCA(n_components=1)
-    int_features_new = pca.transform(X_normalized)
+    int_features_new = pca.fit_transform(X_normalized)
     print('\nPCA transformation:')
     print(int_features_new)
     return int_features_new
@@ -130,6 +137,10 @@ def predict():
     return jsonify({'prediction': prediction.tolist()})
     #return render_template('index.html', prediction_text='Credit Default Fraud Risk $ {}'.format(output))
 
+@app.route('/single_query', methods=('GET', 'POST'))
+def single_query():
+    return render_template('single_query.html')
+
 # Excel Upload - Mass Predict Feature
 @app.route('/mass_predict',methods=['GET', 'POST'])
 def mass_predict():
@@ -157,10 +168,150 @@ def mass_predict():
             input_data = pd.read_excel(file)  # Update this based on your actual data format
 
             # Process the input_data 
+            # print(input_data)
+
+            state_abbreviations = {
+                'Alabama': 'AL',
+                'Montana': 'MT',
+                'Alaska': 'AK',
+                'Nebraska': 'NE',
+                'Arizona': 'AZ',
+                'Nevada': 'NV',
+                'Arkansas': 'AR',
+                'New Hampshire': 'NH',
+                'California': 'CA',
+                'New Jersey': 'NJ',
+                'Colorado': 'CO',
+                'New Mexico': 'NM',
+                'Connecticut': 'CT',
+                'New York': 'NY',
+                'Delaware': 'DE',
+                'District of Columbia': 'DC',
+                'North Carolina': 'NC',
+                'Florida': 'FL',
+                'North Dakota': 'ND',
+                'Georgia': 'GA',
+                'Ohio': 'OH',
+                'Hawaii': 'HI',
+                'Oklahoma': 'OK',
+                'Idaho': 'ID',
+                'Oregon': 'OR',
+                'Illinois': 'IL',
+                'Pennsylvania': 'PA',
+                'Indiana': 'IN',
+                'Rhode Island': 'RI',
+                'Iowa': 'IA',
+                'South Carolina': 'SC',
+                'Kansas': 'KS',
+                'South Dakota': 'SD',
+                'Kentucky': 'KY',
+                'Tennessee': 'TN',
+                'Louisiana': 'LA',
+                'Texas': 'TX',
+                'Maine': 'ME',
+                'Utah': 'UT',
+                'Maryland': 'MD',
+                'Vermont': 'VT',
+                'Massachusetts': 'MA',
+                'Virginia': 'VA',
+                'Michigan': 'MI',
+                'Washington': 'WA',
+                'Minnesota': 'MN',
+                'West Virginia': 'WV',
+                'Mississippi': 'MS',
+                'Wisconsin': 'WI',
+                'Missouri': 'MO',
+                'Wyoming': 'WY',
+            }
+
+            def retrieve_population_data():
+                api_key = 'ba2122268817b7d343412a8ac9317b5618bda67a'
+                url = f"https://api.census.gov/data/2019/pep/population?get=NAME,POP&for=place:*&in=state:*&key={api_key}"
+                response = requests.get(url)
+                col_names = ['city/state', 'population', 'state_id', 'city_id']
+                pop_df = pd.DataFrame(columns=col_names, data=response.json()[1:])
+                #expanding city/state to two separate columns
+                pop_df[['city', 'state']] = pop_df['city/state'].str.split(', ', 1, expand=True)
+                pop_df.drop('city/state', axis=1, inplace=True)
+                #making city lower case
+                pop_df['city'] = pop_df['city'].str.lower()
+                #mapping state abbreviations
+                pop_df['state'] = pop_df['state'].map(lambda x: state_abbreviations.get(x, x))
+                #removing 'town', 'city', 'village' from each city name
+                pop_df['city'].replace('\scity|town|village', '', regex=True, inplace=True)
+                return pop_df
+
+            def preprocessing_data(df, populations):
+                # converting timestamps to DateTime and to unix
+                df['unix_time'] = pd.to_datetime(df['Transaction Date/Timestamp'])
+                df['unix_time'] = pd.to_numeric(df['unix_time'])
+
+                # get dummy category fields
+                dummy_categories = pd.get_dummies(data=df['Transaction Category'])
+                for category in dummy_categories:
+                    df[category] = dummy_categories[category].astype(int)
+
+                # mapping each zip code to city/state and pulling population
+                # creating a place holder column
+                df['city_pop'] = 0
+                n = 0
+                for zip in df['Transaction Zip Code']:
+                    try:
+                        state = zipcodes.matching(str(zip))[0]['state'].upper()
+                        city = zipcodes.matching(str(zip))[0]['city'].lower()
+                        population = pop_df[(pop_df['city'] == city) & (pop_df['state'] == state)]['population'].values
+                        if population.size == 0:
+                        # if population is not found, enter the mean population for the state
+                            df['city_pop'][n] = int((pop_df[(pop_df['state'] == state)]['population'].astype(int).mean()))
+                        else:
+                            df['city_pop'][n] = str(population)[2:-2]
+                    except:
+                        df['city_pop'][n] = 0
+                    n += 1
+                
+                df = df.drop(['Transaction Category', 'Transaction Zip Code', 'Transaction Date/Timestamp'], axis = 1)
+                return df
+
+            def pca(clean_df):
+                df_normalized = clean_df.values
+                df_normalized = StandardScaler().fit_transform(df_normalized)
+
+                pca = PCA(n_components=4)
+                principal_components = pca.fit_transform(df_normalized)
+                principal_df = pd.DataFrame(data = principal_components, columns = ['principal component 1', 'principal component 2',
+                                                                                'principal component 3', 'principal component 4'])
+                return principal_df
+
+            def predict(pca_df, model):
+                predictions = model.predict(pca_df)
+                predictions_df = pd.DataFrame(predictions)
+                predictions_df.replace([0, 1], ['no', 'yes'], inplace=True)
+                return predictions_df
+
+            def user_output(predictions_df, user_input):
+                predictions_df.replace([0, 1], ['no', 'yes'], inplace=True)
+                user_output = user_input.copy()
+                user_output['potential_fraud'] = predictions_df[0]
+                return user_output
+
+            populations = retrieve_population_data()
+            print('input_data')
             print(input_data)
+            clean_df = preprocessing_data(input_data, populations)
+            print('clean_df')
+            print(clean_df)
+            pca_df = pca(clean_df)
+            print('pca_df')
+            print(pca_df)
+            model = pickle.load(open('knn_model_2.pkl', 'rb'))
+            predictions_df = predict(pca_df, model)
+            print('predictions_df')
+            print(predictions_df)
+            user_output_file = user_output(predictions_df, input_data)
+
 
             # Return the processed data or redirect to another page
-            return render_template('mass_upload.html', data=input_data.to_html())
+            return render_template('mass_upload.html', data=user_output_file.to_html())
         except Exception as e:
             print(f'Error processing file: {str(e)}', 'error')
         # finally:
