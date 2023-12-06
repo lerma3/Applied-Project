@@ -14,7 +14,7 @@
 # Dependencies - General
 import pandas as pd
 import numpy as np
-from flask import Flask, request, flash, jsonify, render_template, url_for, redirect
+from flask import Flask, request, flash, jsonify, render_template, url_for, redirect, send_file
 import pickle
 import logging
 
@@ -308,11 +308,12 @@ def mass_predict():
             print('predictions_df')
             print(predictions_df)
             user_output_file = user_output(predictions_df, input_data)
-            user_output_file.to_excel('FraudPredictionResults.xlsx')
+            user_output_file.to_excel('prediction_output.xlsx', index=False)
 
 
             # Return the processed data or redirect to another page
-            return render_template('mass_upload.html', data=user_output_file.to_html())
+            return send_file('prediction_output.xlsx', as_attachment=True, download_name='prediction_output.xlsx')
+            #return render_template('download_excel.html', file_url='prediction_output.xlsx')
         except Exception as e:
             print(f'Error processing file: {str(e)}', 'error')
         # finally:
