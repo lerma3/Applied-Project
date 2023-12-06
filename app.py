@@ -308,6 +308,7 @@ def mass_predict():
             print('predictions_df')
             print(predictions_df)
             user_output_file = user_output(predictions_df, input_data)
+            user_output_file.to_excel('FraudPredictionResults.xlsx')
 
 
             # Return the processed data or redirect to another page
