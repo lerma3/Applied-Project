@@ -13,21 +13,27 @@ from pymongo import MongoClient
 
 #%% 
 # Initial Data Load - To Be Replaced by MongoDB Load
-traindf = pd.read_csv('fraudTrain.csv')
-testdf = pd.read_csv('fraudTest.csv')
+#traindf = pd.read_csv('fraudTrain.csv')
+#testdf = pd.read_csv('fraudTest.csv')
 
-# MongoDB Data Import
-# from flask import Flask
-# from pymongo import MongoClient
+# MongoDB Data Import - Local Environment
+from flask import Flask
+from pymongo import MongoClient
 
-# app = Flask(__name__)
+app = Flask(__name__)
 
-# client = MongoClient('localhost', 27017)
+mongo_uri = 'mongodb://localhost:27017/credit_fraud'
+mongo = MongoClient(mongo_uri)
 
-# db = client.flask_db
-# todos = db.todos
+# 'fraudTest' collection
+fraud_test_collection = mongo.credit_fraud.fraudTest
+# 'fraudTrain' collection
+fraud_train_collection = mongo.credit_fraud.fraudTrain
 
-
+# Retrieve data from 'fraudTrain' collection and create a DataFrame
+traindf = pd.DataFrame(list(fraud_train_collection.find({}, {'_id': 0})))
+# Retrieve data from 'fraudTest' collection and create a DataFrame
+testdf = pd.DataFrame(list(fraud_test_collection.find({}, {'_id': 0})))
 
 #%%
 # Pre-Processing
@@ -171,3 +177,6 @@ print("R^2: {}".format(knn_model.score(X_test, y_test)))
 val = knn_model.predict(principal_df_val)
 val
 # %%
+# Pics from Rosemarie's Code
+# Push to 'pics' repo
+# P
