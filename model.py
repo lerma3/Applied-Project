@@ -156,27 +156,73 @@ y_pred_knn = knn_model_2.predict(X_test)
 
 pickle.dump(knn_model_2, open('knn_model_2.pkl','wb'))
 
-#%%
-#Verification of Model Creation
-model = pickle.load(open('knn_model.pkl','rb'))
-y_pred_log = knn_model.predict(X_test)
+# #%%
+# #Verification of Model Creation
+# model = pickle.load(open('knn_model.pkl','rb'))
+# y_pred_log = knn_model.predict(X_test)
+
+# #%%
+# from sklearn.metrics import confusion_matrix, classification_report
+# print("K Nearest Neighbors Model Performance:")
+# print("-"*50)
+# print("Confusion Matrix:")
+# print(confusion_matrix(y_test, y_pred_knn))
+# print("-"*50)
+# print("Classification Report:")
+# print(classification_report(y_test, y_pred_knn))
+# print("-"*50)
+# print("R^2: {}".format(knn_model.score(X_test, y_test)))
+
+# # %%
+# val = knn_model.predict(principal_df_val)
+# val
 
 #%%
-from sklearn.metrics import confusion_matrix, classification_report
-print("K Nearest Neighbors Model Performance:")
-print("-"*50)
-print("Confusion Matrix:")
-print(confusion_matrix(y_test, y_pred_knn))
-print("-"*50)
-print("Classification Report:")
-print(classification_report(y_test, y_pred_knn))
-print("-"*50)
-print("R^2: {}".format(knn_model.score(X_test, y_test)))
+#------------------------------------------------------
+# Visuals
+fcat=traindf['category'].value_counts()
+fcat
 
-# %%
-val = knn_model.predict(principal_df_val)
-val
 # %%
 # Pics from Rosemarie's Code
 # Push to 'pics' repo
-# P
+import matplotlib.pyplot as plt
+import numpy as np
+
+y = np.array(fcat.values)
+mylabels = ["Transportation", "Grocery", "Home", "Shopping", "Kids+Pets", "Online Shopping", "Entertainment", "Dining", "Care", "Health+Fitness", "Misc", "Misc-Online", "Online Grocery", "Travel"]
+
+# Create a pie chart
+plt.pie(y, labels=mylabels, autopct='%1.1f%%')
+plt.title('Category Distribution')
+#plt.show()
+plt.savefig('static/pics/total_pie.png')
+
+# %%
+femspend = traindf[(traindf["gender"] == "F")]
+femcat = traindf[['category']].value_counts()
+femcat
+
+femcat.plot.pie (ylabel='' , title='Female Purchases by Category', legend=True, labeldistance=None, figsize=(14, 14), autopct='%1.1f%%')
+plt.savefig('static/pics/fem_pie.png')
+# %%
+manspend = traindf[(traindf["gender"] == "M")]
+mancat = traindf[['category']].value_counts()
+mancat
+
+mancat.plot.pie (ylabel='' , title='Male Purchases by Category', legend=True, labeldistance=None, figsize=(14, 14), autopct='%1.1f%%')
+plt.savefig('static/pics/man_pie.png')
+# %%
+import seaborn as sns
+
+plt.figure(figsize=(16, 8))
+plot = sns.barplot( x = traindf['category'],
+                    y = traindf['amt'],
+                    palette='husl')
+plt.xlabel("Purchase Type", size=12)
+plt.ylabel("Amount Spent", size=12)
+plot.set_xticklabels(plot.get_xticklabels(), rotation=45)
+plt.title("Amount Spent by Category", size=16)
+#plt.show()
+plt.savefig('static/pics/bar_plot.png')
+# %%

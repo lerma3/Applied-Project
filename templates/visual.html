@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Add a custom style for responsive images */
+        .responsive-img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
     
@@ -17,39 +24,16 @@
     <p></p>
     <h2>Data Visualization</h2>
     <p></p>
-    <canvas id="myChart" width="400" height="200"></canvas>
-
-    <script>
-        // Sample data for the chart
-        // Access Python variables in JavaScript using Jinja2
-        var labels = {{ labels|tojson|safe }};
-        var data = {{ data|tojson|safe }};
-
-
-        // Get the chart context from the canvas element
-        var ctx = document.getElementById('myChart').getContext('2d');
-
-        // Create a new chart with the specified configuration
-        var myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Monthly Data',
-                    data: data,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>
+    
+    <!-- Display saved images -->
+    <img src="{{ url_for('static', filename='pics/total_pie.png') }}" alt="Total Purchases Pie Chart" class="responsive-img">
+    
+    <img src="{{ url_for('static', filename='pics/fem_pie.png') }}" alt="Female Purchases Pie Chart" class="responsive-img">
+    
+    <img src="{{ url_for('static', filename='pics/man_pie.png') }}" alt="Male Purchases Pie Chart" class="responsive-img">
+    
+    <img src="{{ url_for('static', filename='pics/bar_plot.png') }}" alt="Bar Chart" class="responsive-img">
+    
+    
 </body>
 </html>
